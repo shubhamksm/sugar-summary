@@ -1,37 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import CSVReader from "react-csv-reader";
+import moment from "moment";
 
 function App() {
+  const [data, setData] = useState(null);
+
   const handleForce = (data, fileInfo) => {
-    //   {
-    //     "date": "Jan 28, 2023",
-    //     "time": "9:48:03 PM",
-    //     "tags": null,
-    //     "blood_sugar_measurement__mg_dl_": null,
-    //     "insulin_injection_units__pen_": null,
-    //     "basal_injection_units": null,
-    //     "insulin_injection_units__pump_": null,
-    //     "insulin__meal_": null,
-    //     "insulin__correction_": null,
-    //     "temporary_basal_percentage": null,
-    //     "temporary_basal_duration__minutes_": null,
-    //     "meal_carbohydrates__custom_ratio__factor_15_": null,
-    //     "meal_descriptions": null,
-    //     "activity_duration__minutes_": 29,
-    //     "activity_intensity__1__cosy__2__ordinary__3__demanding_": null,
-    //     "activity_description": "Walking",
-    //     "steps": null,
-    //     "note": null,
-    //     "location": null,
-    //     "blood_pressure": null,
-    //     "body_weight__kg_": null,
-    //     "hba1c__percent_": null,
-    //     "ketones": null,
-    //     "food_type": null,
-    //     "medication": null,
-    //     "timezone": "GMT+01:00"
-    // }
-    const minDate = new Date("Oct 15, 2022");
+    const minDate = new Date("Sept 27, 2022");
     const sortedData = [];
 
     data.forEach((obj) => {
@@ -41,15 +16,33 @@ function App() {
       }
     });
 
-    // [{ name: '0', sugar: '350' }];
+    // Reference Struct ->  [{ time: '3 O'clock', count: 50, sum: 5000 }];
+    const reference = [];
+    for (let i = 0; i <= 23; i++) {
+      const str = i.toString();
+      const time = moment(`2023-01-29T${str.padStart(2, "0")}`);
+      reference.push({ time, count: 0, sum: 0, records: [] });
+    }
 
-    const graphData = [];
+    // Fill the Data
+    sortedData.forEach((data) => {
+      const _key = moment(data.time, "LTS").hour();
+      if (
+        data.blood_sugar_measurement__mg_dl_ &&
+        data.blood_sugar_measurement__mg_dl_ >= 74
+      ) {
+        reference[_key].sum += data.blood_sugar_measurement__mg_dl_;
+        reference[_key].count += 1;
+        reference[_key].records.push(data);
+      }
+    });
 
-    // reference : [{ time: '3 O'clock', count: 50, sum: 5000 }];
+    // Count the Average :
+    for (let i = 0; i < reference.length; i++) {
+      reference[i].avg = reference[i].sum / (reference[i].count - 7);
+    }
 
-    // after loop : [{ time: '3 O'clock', count: 50, sum: 5000, avg: 180 }];
-
-    console.log(sortedData);
+    setData([...reference]);
   };
 
   const papaparseOptions = {

@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "moment": "^2.29.4",
     "react": "^17.0.0",
     "react-csv-reader": "^3.5.2",
     "react-dom": "^17.0.0",
