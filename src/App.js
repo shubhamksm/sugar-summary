@@ -1,6 +1,16 @@
 import React, { useState } from "react";
 import CSVReader from "react-csv-reader";
 import moment from "moment";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 function App() {
   const [data, setData] = useState(null);
@@ -28,8 +38,9 @@ function App() {
     sortedData.forEach((data) => {
       const _key = moment(data.time, "LTS").hour();
       if (
-        data.blood_sugar_measurement__mg_dl_ &&
-        data.blood_sugar_measurement__mg_dl_ >= 74
+        data.blood_sugar_measurement__mg_dl_
+        // data.blood_sugar_measurement__mg_dl_ &&
+        // data.blood_sugar_measurement__mg_dl_ >= 74
       ) {
         reference[_key].sum += data.blood_sugar_measurement__mg_dl_;
         reference[_key].count += 1;
@@ -39,7 +50,14 @@ function App() {
 
     // Count the Average :
     for (let i = 0; i < reference.length; i++) {
-      reference[i].avg = reference[i].sum / (reference[i].count - 7);
+      // reference[i].avg = reference[i].sum / (reference[i].count - 7);
+      reference[i].avg = reference[i].sum / reference[i].count;
+      if (reference[i].avg > 140) {
+        reference[i].avg += 20;
+      } else {
+        // reference[i].avg -= 10;
+      }
+      reference[i].displayTime = reference[i].time.format("hA");
     }
 
     setData([...reference]);
@@ -54,13 +72,43 @@ function App() {
 
   return (
     <div className="App">
-      <div className="container">
+      <div className="file-container">
         <CSVReader
           cssClass="react-csv-input"
-          label="Select CSV with secret Death Star statistics"
+          label="Please upload a File"
           onFileLoaded={handleForce}
           parserOptions={papaparseOptions}
         />
+      </div>
+      <br />
+      <br />
+      <hr />
+      <br />
+      <br />
+      <div className="chart-container">
+        {data && (
+          // <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            width={800}
+            height={300}
+            data={data}
+            margin={{
+              top: 5,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="displayTime" />
+            <YAxis dataKey="avg" />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="avg" stroke="#8884d8" />
+            {/* <Line type="monotone" dataKey="uv" stroke="#82ca9d" /> */}
+          </LineChart>
+          // </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
